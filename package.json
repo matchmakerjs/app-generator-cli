@@ -1,0 +1,43 @@
+{
+  "name": "app-generator-cli",
+  "version": "0.0.1",
+  "description": "cli tool to simplify app creation",
+  "main": "dist/cli.js",
+  "scripts": {
+    "test": "jest",
+    "build": "rimraf -rf dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matchmakerjs/app-generator-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "api",
+    "utility"
+  ],
+  "author": "Olaleye Afolabi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matchmakerjs/app-generator-cli/issues"
+  },
+  "homepage": "https://github.com/matchmakerjs/app-generator-cli#readme",
+  "devDependencies": {
+    "@types/node": "^16.9.1",
+    "@types/shelljs": "^0.8.9",
+    "@types/yargs": "^17.0.2",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^10.0.0",
+    "nodemon": "^2.0.12",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "shelljs": "^0.8.4",
+    "yargs": "^17.1.1"
+  },
+  "workspaces": [
+    "temp"
+  ]
+}
