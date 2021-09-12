@@ -46,14 +46,17 @@ export async function addTypescript(options: {
         });
     });
 
-    let tsConfig = path.join(cwd, 'tsconfig.json');
     shell.exec(`npm i typescript @types/node rimraf -D -w ${cwd}`);
-    fs.stat(tsConfig, (err) => {
-        if (err?.code !== 'ENOENT') {
-            return;
-        }
-        fs.createReadStream(path.join(cliDir, '../resources', 'tsconfig.json'))
-            .pipe(fs.createWriteStream(tsConfig));
-    });
+
+    for (const resouceName of ['tsconfig.json']) {
+        let tsConfig = path.join(cwd, resouceName);
+        fs.stat(tsConfig, (err) => {
+            if (err?.code !== 'ENOENT') {
+                return;
+            }
+            fs.createReadStream(path.join(cliDir, '../resources', resouceName))
+                .pipe(fs.createWriteStream(tsConfig));
+        });
+    }
 
 }

@@ -2,6 +2,7 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { addJest } from './add-jest';
 import { addTsLint } from './add-lint';
 import { addTypescript } from './add-typescript';
 
@@ -20,6 +21,9 @@ yargs(hideBin(process.argv))
                         break;
                     case 'tslint':
                         await addTsLint({ cwd, argv, cliDir: __dirname });
+                        break;
+                    case 'ts-jest':
+                        await addJest({ cwd, argv, cliDir: __dirname });
                         break;
                 }
             }

@@ -3,7 +3,7 @@ import * as path from "path";
 import * as shell from "shelljs";
 import { Arguments } from "yargs";
 
-export async function addTsLint(options: {
+export async function addJest(options: {
     cliDir: string,
     cwd: string,
     argv: Arguments
@@ -16,7 +16,7 @@ export async function addTsLint(options: {
         cwd = path.join(options.cwd, cwd);
     }
 
-    shell.exec(`npm i eslint prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-prettier eslint-config-prettier -D -w ${cwd}`);
+    shell.exec(`npm i jest @types/jest ts-jest faker @types/faker -D -w ${cwd}`);
 
     await new Promise<void>((res, rej) => {
         const packageJsonPath = path.join(cwd, 'package.json');
@@ -26,8 +26,10 @@ export async function addTsLint(options: {
             if (!packageJson.scripts) {
                 packageJson.scripts = {};
             }
-            packageJson.scripts['lint'] = 'eslint . --ext .ts';
-            packageJson.scripts['format'] = "prettier --write 'src/**/*.ts'";
+            if (packageJson.scripts.test) {
+                return res();
+            }
+            packageJson.scripts['test'] = 'jest';
             fs.writeFile(packageJsonPath, JSON.stringify(packageJson), (err) => {
                 if (err) return rej(err);
                 res();
@@ -35,7 +37,7 @@ export async function addTsLint(options: {
         });
     });
 
-    for (const resouceName of ['.eslintrc.js', '.prettierrc.js', '.eslintignore']) {
+    for (const resouceName of ['jest.config.js']) {
         let tsConfig = path.join(cwd, resouceName);
         fs.stat(tsConfig, (err) => {
             if (err?.code !== 'ENOENT') {
