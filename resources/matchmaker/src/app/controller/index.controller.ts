@@ -1,10 +1,17 @@
-import { ErrorResponse, Get, HandlerContext, RestController } from '@matchmakerjs/matchmaker';
+import {
+    ErrorResponse,
+    Get,
+    HandlerContext,
+    RestController
+} from '@matchmakerjs/matchmaker';
+import { AnonymousUserAllowed } from '@matchmakerjs/matchmaker-security';
 import * as fs from 'fs';
 import { IncomingMessage, ServerResponse } from 'http';
 
 @RestController()
 export class IndexController {
 
+    @AnonymousUserAllowed()
     @Get('/')
     index(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<void> {
         return new Promise<void>((res, rej) => {
@@ -27,6 +34,7 @@ export class IndexController {
         });
     }
 
+    @AnonymousUserAllowed()
     @Get('/v3/api-docs')
     apiDocs(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<void> {
         return new Promise<void>((res, rej) => {

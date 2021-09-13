@@ -1,14 +1,14 @@
-import { SimpleRequestHandler, startServerWithGracefulShutdown } from '@matchmakerjs/matchmaker';
+import { startServerWithGracefulShutdown } from '@matchmakerjs/matchmaker';
+import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
 import { argumentListResolver } from './conf/argument-resolver.conf';
 import { createAppContainer } from './conf/container.conf';
 import { router } from './conf/router.conf';
 import { validator } from './conf/validator.conf';
-import { LoggingRequestListener } from './logging-request-listener';
 
 createAppContainer().then(([container, onExit]) => {
-    startServerWithGracefulShutdown(LoggingRequestListener(router, new SimpleRequestHandler({
+    startServerWithGracefulShutdown(SecureRequestListener(router, {
         container,
         argumentListResolver,
         validator,
-    })), onExit);
+    }), onExit);
 });
