@@ -4,6 +4,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { addJest } from './add-jest';
 import { addTsLint } from './add-lint';
+import { addMatchmaker } from './add-matchmaker';
 import { addTypescript } from './add-typescript';
 
 const cwd = process.cwd();
@@ -24,6 +25,9 @@ yargs(hideBin(process.argv))
                         break;
                     case 'ts-jest':
                         await addJest({ cwd, argv, cliDir: __dirname });
+                        break;
+                    case 'matchmaker':
+                        await addMatchmaker({ cwd, argv, cliDir: __dirname });
                         break;
                 }
             }

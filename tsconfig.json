@@ -1,13 +1,7 @@
 {
-    "compilerOptions": {
-      "rootDir": "src",
-      "outDir": "dist",
-      "lib": [
-        "es5"
-      ],
-      "noImplicitAny": true,
-      "noImplicitThis": true,
-      "strictFunctionTypes": true,
-      "alwaysStrict": true
-    }
-  }
+  "extends": "./tsconfig.prod.json",
+  "include": [
+    "src",
+    "resources"
+  ]
+}

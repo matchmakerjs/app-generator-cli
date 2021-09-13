@@ -3,9 +3,16 @@
   "version": "0.0.1",
   "description": "cli tool to simplify app creation",
   "main": "dist/cli.js",
+  "files": [
+    "dist/**/*",
+    "resources/**/*"
+  ],
+  "bin": {
+    "app-setup": "dist/cli.js"
+  },
   "scripts": {
     "test": "jest",
-    "build": "rimraf -rf dist && tsc"
+    "build": "rimraf -rf dist && tsc -p tsconfig.prod.json"
   },
   "repository": {
     "type": "git",
@@ -23,9 +30,13 @@
   },
   "homepage": "https://github.com/matchmakerjs/app-generator-cli#readme",
   "devDependencies": {
+    "@matchmakerjs/di": "^0.0.1",
+    "@matchmakerjs/jwt-validator": "^0.0.1",
+    "@matchmakerjs/matchmaker": "^0.0.1",
     "@types/node": "^16.9.1",
     "@types/shelljs": "^0.8.9",
     "@types/yargs": "^17.0.2",
+    "class-validator": "^0.13.1",
     "copyfiles": "^2.4.1",
     "dotenv": "^10.0.0",
     "nodemon": "^2.0.12",
