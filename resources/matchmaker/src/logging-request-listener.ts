@@ -1,17 +1,18 @@
 import {
-    RequestHandlerConfig, Router,
+    RequestHandler,
+    Router,
     ROUTER_EVENTS,
-    RoutingRequestListener, SimpleRequestHandler
+    RoutingRequestListener
 } from '@matchmakerjs/matchmaker';
-import { IncomingMessage, RequestListener } from 'http';
+import { IncomingMessage, RequestListener, ServerResponse } from 'http';
 
 export const handlerActivityStarted = Symbol('handlerActivityStarted');
 export const handlerActivityEnded = Symbol('handlerActivityEnded');
 
-export function App(router: Router, config: RequestHandlerConfig): RequestListener {
+export function LoggingRequestListener(router: Router, requestHandler: RequestHandler<IncomingMessage, ServerResponse>): RequestListener {
 
     const listener = RoutingRequestListener({
-        requestHandler: new SimpleRequestHandler(config),
+        requestHandler,
         router
     });
 

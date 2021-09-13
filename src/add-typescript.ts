@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as shell from "shelljs";
 import { Arguments } from "yargs";
+import { copy } from "./copy-utils";
 
 export async function addTypescript(options: {
     cliDir: string,
@@ -54,17 +55,6 @@ export async function addTypescript(options: {
         });
     });
 
-    shell.exec(`npm i  --prefix ${cwd} typescript @types/node rimraf -D`);
-
-    for (const resouceName of ['tsconfig.json']) {
-        let tsConfig = path.resolve(cwd, resouceName);
-        fs.stat(tsConfig, (err) => {
-            if (err?.code !== 'ENOENT') {
-                return;
-            }
-            fs.createReadStream(path.resolve(cliDir, '..', 'resources', resouceName))
-                .pipe(fs.createWriteStream(tsConfig));
-        });
-    }
-
+    shell.exec(`npm i --prefix ${cwd} typescript @types/node rimraf -D`);
+    await copy(path.resolve(cliDir, '..', 'resources', '_tsconfig.json'), path.resolve(cwd, 'tsconfig.json'));
 }

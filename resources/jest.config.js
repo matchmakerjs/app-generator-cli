@@ -12,7 +12,5 @@ module.exports = {
     "coveragePathIgnorePatterns": [
         "node_modules",
         "test",
-        "<rootDir>/src/index.ts",
-        "<rootDir>/src/migration/",
     ],
 }

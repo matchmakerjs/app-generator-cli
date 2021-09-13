@@ -4,6 +4,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 
 @RestController()
 export class IndexController {
+
     @Get('/')
     index(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<void> {
         return new Promise<void>((res, rej) => {
