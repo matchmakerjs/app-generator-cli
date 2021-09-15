@@ -7,7 +7,8 @@ import { copy } from "./copy-utils";
 export async function addTypescript(options: {
     cliDir: string,
     cwd: string,
-    argv: Arguments
+    argv: Arguments,
+    jestEnabled: boolean
 }): Promise<void> {
 
     const { argv, cliDir } = options;
@@ -30,10 +31,12 @@ export async function addTypescript(options: {
     await new Promise<void>((res, rej) => {
         const packageJsonPath = path.resolve(cwd, 'package.json');
         fs.stat(packageJsonPath, async (err) => {
+            let initialized = false;
             if (err?.code === 'ENOENT') {
                 await new Promise<string>((res) => {
                     shell.exec(`npm init --prefix ${cwd} -y`, (code, stdout, stderr) => {
                         if (code != 0) return rej(stderr);
+                        initialized = true;
                         res(stdout);
                     });
                 });
@@ -45,6 +48,9 @@ export async function addTypescript(options: {
                 const packageJson = JSON.parse(data.toString());
                 if (!packageJson.scripts) {
                     packageJson.scripts = {};
+                }
+                if (options.jestEnabled && (initialized || !packageJson.scripts['test'])) {
+                    packageJson.scripts['test'] = 'jest';
                 }
                 packageJson.scripts['tsc'] = 'rimraf -rf dist && tsc';
                 fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), (err) => {

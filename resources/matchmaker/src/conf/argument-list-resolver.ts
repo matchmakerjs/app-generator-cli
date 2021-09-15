@@ -9,7 +9,7 @@ import {
 } from '@matchmakerjs/matchmaker';
 import { IncomingMessage, ServerResponse } from 'http';
 
-export const argumentListResolver = new DelegatingArgumentListResolver([
+export default new DelegatingArgumentListResolver([
     new HandlerContextArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new PathArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new QueryArgumentResolverFactory<IncomingMessage, ServerResponse>(),

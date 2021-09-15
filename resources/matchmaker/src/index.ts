@@ -1,14 +1,15 @@
+import { createContainer } from '@matchmakerjs/di';
 import { startServerWithGracefulShutdown } from '@matchmakerjs/matchmaker';
 import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
-import { argumentListResolver } from './conf/argument-resolver.conf';
-import { createAppContainer } from './conf/container.conf';
-import { router } from './conf/router.conf';
-import { validator } from './conf/validator.conf';
+import argumentListResolver from './conf/argument-list-resolver';
+import router from './conf/router';
+import validator from './conf/validator';
 
-createAppContainer().then(([container, onExit]) => {
-    startServerWithGracefulShutdown(SecureRequestListener(router, {
-        container,
-        argumentListResolver,
-        validator,
-    }), onExit);
+const [container, onExit] = createContainer({
+    modules: []
 });
+startServerWithGracefulShutdown(SecureRequestListener(router, {
+    container,
+    argumentListResolver,
+    validator,
+}), onExit);

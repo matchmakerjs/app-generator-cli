@@ -15,10 +15,16 @@ yargs(hideBin(process.argv))
         'Add TS support to application',
         (yargs) => yargs,
         async (argv) => {
-            for (const module of (argv.module as string[])) {
+            const modules = argv.module as string[];
+            for (const module of (modules)) {
                 switch (module) {
                     case 'ts':
-                        await addTypescript({ cwd, argv, cliDir: __dirname });
+                        await addTypescript({
+                            cwd,
+                            argv,
+                            cliDir: __dirname,
+                            jestEnabled: modules.includes('ts-jest')
+                        });
                         break;
                     case 'tslint':
                         await addTsLint({ cwd, argv, cliDir: __dirname });

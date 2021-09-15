@@ -1,7 +1,7 @@
 import { ApiResponse, Validator } from "@matchmakerjs/matchmaker";
 import { validate, ValidationError } from "class-validator";
 
-export const validator: Validator = async (payload: any) => validate(payload, {
+const validator: Validator = async (payload: any) => validate(payload, {
     validationError: { target: false },
     skipUndefinedProperties: true
 }).then(errors => {
@@ -21,3 +21,5 @@ function getFirstMessage(error: ValidationError): string {
     }
     return Object.values(error.constraints)[0];
 }
+
+export default validator;

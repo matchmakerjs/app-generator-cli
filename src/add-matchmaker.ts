@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as shell from "shelljs";
 import { Arguments } from "yargs";
+import { copy } from "./copy-utils";
 
 export async function addMatchmaker(options: {
     cliDir: string,
@@ -40,4 +41,5 @@ export async function addMatchmaker(options: {
     });
 
     shell.cp('-r', path.resolve(cliDir, '..', 'resources', 'matchmaker', '*'), cwd);
+    await copy(path.resolve(cliDir, '..', 'resources', 'matchmaker', '.env'), path.resolve(cwd, '.env'));
 }
