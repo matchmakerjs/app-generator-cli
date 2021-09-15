@@ -7,12 +7,16 @@ import router from '../../src/conf/router';
 import validator from '../../src/conf/validator';
 
 export function TestServer(container: LazyDIContainer, claims?: JwtClaims): Server {
-    return createServer(SecureRequestListener(router, {
-        container,
-        argumentListResolver,
-        validator,
-        accessClaimsResolver: claims ? {
-            getClaims: async (_) => claims
-        } : null
-    }));
+    return createServer(
+        SecureRequestListener(router, {
+            container,
+            argumentListResolver,
+            validator,
+            accessClaimsResolver: claims
+                ? {
+                      getClaims: async (_) => claims,
+                  }
+                : null,
+        }),
+    );
 }

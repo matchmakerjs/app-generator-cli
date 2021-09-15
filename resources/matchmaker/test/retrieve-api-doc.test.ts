@@ -4,9 +4,8 @@ import * as path from 'path';
 import { TestServer } from './conf/test-server';
 
 describe('API Doc', () => {
-
     const [container, onExit] = createContainer({
-        modules: []
+        modules: [],
     });
 
     afterAll(onExit);
@@ -17,17 +16,16 @@ describe('API Doc', () => {
         expect(response.statusCode).toBe(200);
         expect(response.headers['content-type']).toBe('application/json');
         await new Promise<void>((res, rej) => {
-            fs.readFile(process.env.API_DOC_PATH,
-                (err, data) => {
-                    if (err) return rej(err);
-                    expect(response.body).toEqual(data);
-                    res();
-                });
+            fs.readFile(process.env.API_DOC_PATH, (err, data) => {
+                if (err) return rej(err);
+                expect(response.body).toEqual(data);
+                res();
+            });
         });
     });
 
     it('should return 404 if api doc is not found', async () => {
-        delete process.env.API_DOC_PATH;
+        process.env.API_DOC_PATH = path.resolve(__dirname, '_');
         const response = await TestServer(container).get('/v3/api-docs');
         expect(response.statusCode).toBe(404);
     });

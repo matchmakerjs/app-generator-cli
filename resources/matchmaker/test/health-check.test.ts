@@ -2,15 +2,14 @@ import { createContainer } from '@matchmakerjs/di';
 import { TestServer } from './conf/test-server';
 
 describe('Health Checker', () => {
-
     let result: boolean;
     const [container, onExit] = createContainer({
         modules: [
             {
                 providers: [],
-                isHealthy: () => Promise.resolve(result)
-            }
-        ]
+                isHealthy: () => Promise.resolve(result),
+            },
+        ],
     });
 
     afterAll(onExit);

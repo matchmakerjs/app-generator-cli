@@ -6,10 +6,13 @@ import router from './conf/router';
 import validator from './conf/validator';
 
 const [container, onExit] = createContainer({
-    modules: []
+    modules: [],
 });
-startServerWithGracefulShutdown(SecureRequestListener(router, {
-    container,
-    argumentListResolver,
-    validator,
-}), onExit);
+startServerWithGracefulShutdown(
+    SecureRequestListener(router, {
+        container,
+        argumentListResolver,
+        validator,
+    }),
+    onExit,
+);
