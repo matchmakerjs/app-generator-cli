@@ -4,11 +4,11 @@ import * as path from 'path';
 import { TestServer } from './conf/test-server';
 
 describe('API Doc', () => {
-    const [container, onExit] = createContainer({
+    const [container, cleanUp] = createContainer({
         modules: [],
     });
 
-    afterAll(onExit);
+    afterAll(cleanUp);
 
     it('should retrieve api doc', async () => {
         process.env.API_DOC_PATH = path.resolve(__dirname, '..', 'src', 'swagger-ui.html');

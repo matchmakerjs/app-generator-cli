@@ -5,7 +5,7 @@ import argumentListResolver from './conf/argument-list-resolver';
 import router from './conf/router';
 import validator from './conf/validator';
 
-const [container, onExit] = createContainer({
+const [container, cleanUp] = createContainer({
     modules: [],
 });
 startServerWithGracefulShutdown(
@@ -14,5 +14,5 @@ startServerWithGracefulShutdown(
         argumentListResolver,
         validator,
     }),
-    onExit,
+    cleanUp,
 );

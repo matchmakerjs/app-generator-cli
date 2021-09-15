@@ -3,7 +3,7 @@ import { TestServer } from './conf/test-server';
 
 describe('Health Checker', () => {
     let result: boolean;
-    const [container, onExit] = createContainer({
+    const [container, cleanUp] = createContainer({
         modules: [
             {
                 providers: [],
@@ -12,7 +12,7 @@ describe('Health Checker', () => {
         ],
     });
 
-    afterAll(onExit);
+    afterAll(cleanUp);
 
     it('should return 200 OK when healthy', async () => {
         result = true;

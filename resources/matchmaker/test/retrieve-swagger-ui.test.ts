@@ -4,11 +4,11 @@ import * as path from 'path';
 import { TestServer } from './conf/test-server';
 
 describe('swagger UI', () => {
-    const [container, onExit] = createContainer({
+    const [container, cleanUp] = createContainer({
         modules: [],
     });
 
-    afterAll(onExit);
+    afterAll(cleanUp);
 
     it('should retrieve swagger UI', async () => {
         process.env.SWAGGER_UI_PATH = path.resolve(__dirname, '..', 'src', 'swagger-ui.html');

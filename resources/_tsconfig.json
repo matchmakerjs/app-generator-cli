@@ -10,10 +10,9 @@
     "noImplicitThis": true,
     "strictFunctionTypes": true,
     "alwaysStrict": true,
-    "declaration": false,
+    "declaration": false
   },
   "exclude": [
-    "scripts",
     "test"
   ]
 }
