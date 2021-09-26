@@ -22,6 +22,7 @@ Clone project and open terminal in project root to execute the following scripts
 Create app directory and optionally initialize it with `npm init`.
 
 Create `.npmrc` file in the app directory and update its content as follows
+
 `
 @matchmakerjs:registry=https://npm.pkg.github.com/
 //npm.pkg.github.com/:_authToken=${GITHUB_USER_TOKEN}
