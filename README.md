@@ -40,6 +40,19 @@ Open terminal at the app root and execute the following scripts
 ## Run App
 
 ### Execute tests
+Update package.json to match the following if you used `npm init`.
+
+```
+{
+...
+"scripts": {
+    "test": "jest",
+    ...
+ },
+...
+}
+```
+
 Run `npm test`
 
 ### Run dev server
