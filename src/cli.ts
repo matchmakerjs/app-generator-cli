@@ -26,7 +26,7 @@ yargs(hideBin(process.argv))
                             jestEnabled: modules.includes('ts-jest')
                         });
                         break;
-                    case 'tslint':
+                    case 'ts-lint':
                         await addTsLint({ cwd, argv, cliDir: __dirname });
                         break;
                     case 'ts-jest':

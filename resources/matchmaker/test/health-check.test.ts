@@ -1,7 +1,7 @@
 import { createContainer } from '@matchmakerjs/di';
 import { TestServer } from './conf/test-server';
 
-describe('Health Checker', () => {
+describe('Healthcheck', () => {
     let result: boolean;
     const [container, cleanUp] = createContainer({
         modules: [
@@ -16,13 +16,13 @@ describe('Health Checker', () => {
 
     it('should return 200 OK when healthy', async () => {
         result = true;
-        const response = await TestServer(container).get(`/heartbeat`);
+        const response = await TestServer(container).get(`/healthcheck`);
         expect(response.statusCode).toBe(200);
     });
 
     it('should return 503 when unhealthy', async () => {
         result = false;
-        const response = await TestServer(container).get(`/heartbeat`);
+        const response = await TestServer(container).get(`/healthcheck`);
         expect(response.statusCode).toBe(503);
     });
 });

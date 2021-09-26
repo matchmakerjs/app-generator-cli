@@ -7,7 +7,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 @AnonymousUserAllowed()
 @RestController()
 export class IndexController {
-    constructor(private healthChecker: HealthChecker) {}
+    constructor(private healthChecker: HealthChecker) { }
 
     @Get('/')
     index(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<void> {
@@ -57,15 +57,23 @@ export class IndexController {
         });
     }
 
-    @Get('/heartbeat')
-    async heartbeat(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<ApiResponse<void>> {
+    @Get('/healthcheck')
+    async healthcheck(context: HandlerContext<IncomingMessage, ServerResponse>): Promise<ApiResponse<void>> {
         if (await this.healthChecker.isHealthy()) {
-            return { successful: true, message: 'Stable' };
+            return {
+                successful: true,
+                message: 'Healthy',
+                code: 'HEALTHY'
+            };
         }
         const response = context.response;
         response.writeHead(503, {
             'content-type': 'application/json',
         });
-        response.end(JSON.stringify({ successful: false, message: 'Unstable' }));
+        response.end(JSON.stringify({
+            successful: false,
+            message: 'Unhealthy',
+            code: 'UNHEALTHY'
+        }));
     }
 }
