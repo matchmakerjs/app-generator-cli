@@ -1,7 +1,7 @@
 {
   "name": "@matchmakerjs/app-generator-cli",
   "version": "0.0.1",
-  "description": "cli tool to simplify app creation",
+  "description": "cli tool to simplify node application setup",
   "main": "dist/cli.js",
   "files": [
     "dist/**/*",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "rimraf -rf dist && tsc -p tsconfig.prod.json"
+    "tsc": "rimraf -rf dist && tsc -p tsconfig.prod.json"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,8 @@
   },
   "keywords": [
     "cli",
-    "api",
-    "utility"
+    "rest",
+    "generator"
   ],
   "author": "Olaleye Afolabi",
   "license": "ISC",
@@ -40,8 +40,6 @@
     "@types/shelljs": "^0.8.9",
     "@types/yargs": "^17.0.2",
     "class-validator": "^0.13.1",
-    "copyfiles": "^2.4.1",
-    "dotenv": "^10.0.0",
     "jest": "^27.2.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.2.1",

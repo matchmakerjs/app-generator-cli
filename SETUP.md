@@ -1,4 +1,4 @@
-# Project Setup
+# Project Setup Steps
 
 ## Install typescript and node types
 `npm i typescript @types/node -D`
@@ -7,4 +7,7 @@
 `npm i shelljs yargs`
 
 ## Install dev utilities
-`npm i rimraf @types/shelljs @types/yargs copyfiles dotenv ts-node nodemon -D`
+`npm i rimraf @types/shelljs @types/yargs ts-node -D`
+
+## Install generated app dependencies
+`npm i @matchmakerjs/jwt-validator @matchmakerjs/di @matchmakerjs/matchmaker @matchmakerjs/matchmaker-security class-validator @matchmakerjs/rest-assured -D`
