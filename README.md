@@ -272,7 +272,7 @@ export class OrderController {
         return this.orderService.saveOrder(request);
     }
 
-    @Get('orders/:id')
+    @Get('orders/:id:\\d+') // the optional regular expression argument (:\\d+) ensures this endpoint is only matched when :id is an integer
     async getOrder(@PathParameter('id') id: string): Promise<Order> {
         const order = await this.entityManager.findOne(Order, id);
         if (!order) {
