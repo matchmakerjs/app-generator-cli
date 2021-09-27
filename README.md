@@ -266,7 +266,7 @@ export class OrderService {
 }
 ```
 
-## Add controller to src/app/controllers/
+## Add controller and authorization
 
 src/app/controllers/order.controller.ts
 
@@ -318,12 +318,14 @@ export class OrderController {
 
         const [orders, total] = await this.entityManager.findAndCount(Order, {
             skip: offset,
-            take: limit
+            take: limit,
+            order: { 'createdAt': 'DESC' }
         });
         const items = await this.entityManager.find(OrderItem, {
             where: {
                 order: In(orders)
-            }
+            },
+            order: { 'amount': 'DESC' }
         });
         orders.forEach(order => {
             order.items = items.filter(item => item.order.id === order.id);
