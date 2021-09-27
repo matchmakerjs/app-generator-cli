@@ -344,13 +344,16 @@ src/app/guards/admin.guard.ts
 ```
 import { Injectable } from "@matchmakerjs/di";
 import { RouteGuard, RouteObjection } from "@matchmakerjs/matchmaker";
+import { RequestMetadata } from "@matchmakerjs/matchmaker-security";
 import { IncomingMessage } from "http";
 
 @Injectable()
 export class AdminGuard implements RouteGuard<IncomingMessage> {
 
+    constructor(private requestMetadata: RequestMetadata) { }
+
     async findObjection(request: IncomingMessage): Promise<RouteObjection> {
-        if (request.headers['x-principal-id'] === '1') {
+        if (this.requestMetadata.userId === '1') {
             return;
         }
         return {
