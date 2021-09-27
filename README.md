@@ -322,6 +322,7 @@ export class OrderController {
             order: { 'createdAt': 'DESC' }
         });
         const items = await this.entityManager.find(OrderItem, {
+            relations: ['order'],
             where: {
                 order: In(orders)
             },
