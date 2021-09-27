@@ -25,6 +25,7 @@ Create `.npmrc` file in the app directory and update its content as follows
 
 ```
 @matchmakerjs:registry=https://npm.pkg.github.com/
+
 //npm.pkg.github.com/:_authToken=${GITHUB_USER_TOKEN}
 ```
 
