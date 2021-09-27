@@ -271,11 +271,15 @@ export class OrderService {
 src/app/controllers/order.controller.ts
 
 ```
-import { ErrorResponse, Get, PathParameter, Post, RequestBody, RestController, Valid } from '@matchmakerjs/matchmaker';
-import { EntityManager } from 'typeorm';
+import { ErrorResponse, Get, PathParameter, Post, Query, RequestBody, RestController, Valid } from '@matchmakerjs/matchmaker';
+import { IfAuthorized } from '@matchmakerjs/matchmaker-security';
+import { EntityManager, In } from 'typeorm';
 import { OrderItem } from '../data/entities/order-item.entity';
 import { Order } from '../data/entities/order.entity';
+import { PageRequest } from '../dto/page-request';
 import { OrderApiRequest } from '../dto/request/order.request';
+import { SearchResult } from '../dto/search-result';
+import { AdminGuard } from '../guards/admin.guard';
 import { OrderService } from "../services/order.service";
 
 @RestController()
@@ -304,6 +308,52 @@ export class OrderController {
             }
         });
         return order;
+    }
+
+    @IfAuthorized([AdminGuard])
+    @Get('orders')
+    async getOrders(@Query() request: PageRequest): Promise<SearchResult<Order>> {
+        const offset = request?.offset || 0;
+        const limit = request?.limit || 10;
+
+        const [orders, total] = await this.entityManager.findAndCount(Order, {
+            skip: offset,
+            take: limit
+        });
+        const items = await this.entityManager.find(OrderItem, {
+            where: {
+                order: In(orders)
+            }
+        });
+        orders.forEach(order => {
+            order.items = items.filter(item => item.order.id === order.id);
+        });
+        return {
+            results: orders,
+            limit,
+            offset,
+            total
+        };
+    }
+}
+```
+
+src/app/guards/admin.guard.ts
+```
+import { Injectable } from "@matchmakerjs/di";
+import { RouteGuard, RouteObjection } from "@matchmakerjs/matchmaker";
+import { IncomingMessage } from "http";
+
+@Injectable()
+export class AdminGuard implements RouteGuard<IncomingMessage> {
+
+    async findObjection(request: IncomingMessage): Promise<RouteObjection> {
+        if (request.headers['x-principal-id'] === '1') {
+            return;
+        }
+        return {
+            statusCode: 403
+        };
     }
 }
 ```
