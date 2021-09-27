@@ -107,8 +107,9 @@ createTypeOrmModule(SqliteInMemoryConnectionOptions({
             accessClaimsResolver: {
                 getClaims: async (request: IncomingMessage) => {
                     // your token validation logic here
-                    return {
-                        sub: request.headers['x-principal-id'] || '1'
+                    const userId = request.headers['x-principal-id'];
+                    return userId && {
+                        sub: userId
                     } as JwtClaims;
                 }
             }
