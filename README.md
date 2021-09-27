@@ -15,7 +15,7 @@ Clone project and open terminal in project root to execute the following scripts
 `chmod +x dist/cli.js && npm link -f`
 
 
-# Example Application
+# Generate Application
 
 ## Setup App Directory
 
@@ -27,6 +27,8 @@ Create `.npmrc` file in the app directory and update its content as follows
 @matchmakerjs:registry=https://npm.pkg.github.com/
 
 //npm.pkg.github.com/:_authToken=${GITHUB_USER_TOKEN}
+
+cache=.npm-cache
 ```
 
 ## App Setup
@@ -59,7 +61,7 @@ Run `npm test`
 ### Run dev server
 Run `npm start` and visit `http://127.0.0.1:5000` in your browser
 
-# Add TypeOrm Support
+# Add CRUD Functionality using TypeOrm
 
 ## Install dependencies
 ```
@@ -246,7 +248,7 @@ export class OrderService {
 }
 ```
 
-## Add order controller
+## Add controller to src/app/controllers/
 
 src/app/controllers/order.controller.ts
 
