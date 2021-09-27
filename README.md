@@ -40,9 +40,7 @@ Open terminal at the app root and execute the following scripts
 ### Generate App
 `app-setup add ts ts-lint ts-jest matchmaker`
 
-## Run App
-
-### Execute tests
+## Execute tests
 Update package.json to match the following if you used `npm init`.
 
 ```
@@ -58,7 +56,7 @@ Update package.json to match the following if you used `npm init`.
 
 Run `npm test`
 
-### Run dev server
+## Run App
 Run `npm start` and visit `http://127.0.0.1:5000` in your browser
 
 # Add CRUD Functionality using TypeOrm
