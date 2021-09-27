@@ -271,8 +271,9 @@ export class OrderService {
 src/app/controllers/order.controller.ts
 
 ```
-import { ErrorResponse, Get, PathParameter, Post, Query, RequestBody, RestController, Valid } from '@matchmakerjs/matchmaker';
+import { ErrorResponse, Get, HandlerContext, PathParameter, Post, Query, RequestBody, RestController, Valid } from '@matchmakerjs/matchmaker';
 import { IfAuthorized } from '@matchmakerjs/matchmaker-security';
+import { IncomingMessage, ServerResponse } from 'http';
 import { EntityManager, In } from 'typeorm';
 import { OrderItem } from '../data/entities/order-item.entity';
 import { Order } from '../data/entities/order.entity';
@@ -290,7 +291,8 @@ export class OrderController {
         private orderService: OrderService) { }
 
     @Post('orders')
-    async saveOrder(@RequestBody() @Valid() request: OrderApiRequest): Promise<Order> {
+    async saveOrder(context: HandlerContext<IncomingMessage, ServerResponse>, @RequestBody() @Valid() request: OrderApiRequest): Promise<Order> {
+        context.response.statusCode = 201;
         return this.orderService.saveOrder(request);
     }
 
@@ -304,7 +306,9 @@ export class OrderController {
         }
         order.items = await this.entityManager.find(OrderItem, {
             where: {
-                order
+                order: {
+                    id: order.id
+                }
             }
         });
         return order;
@@ -324,7 +328,9 @@ export class OrderController {
         const items = await this.entityManager.find(OrderItem, {
             relations: ['order'],
             where: {
-                order: In(orders)
+                order: {
+                    id: In(orders.map(order => order.id))
+                }
             },
             order: { 'amount': 'DESC' }
         });
