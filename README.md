@@ -1,4 +1,4 @@
-# Setup
+# CLI Setup
 
 Clone project and open terminal in project root to execute the following scripts
 
@@ -305,4 +305,4 @@ export default SimpleRouter.fromControllers([
 ]);
 ```
 
-Visit `http://127.0.0.1:5000` in your browser to see/use the new endpoints
+Visit `http://127.0.0.1:5000` in your browser to view/use the new endpoints
