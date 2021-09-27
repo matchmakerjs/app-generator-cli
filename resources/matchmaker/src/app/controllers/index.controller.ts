@@ -66,14 +66,11 @@ export class IndexController {
                 code: 'HEALTHY'
             };
         }
-        const response = context.response;
-        response.writeHead(503, {
-            'content-type': 'application/json',
-        });
-        response.end(JSON.stringify({
+        context.response.statusCode = 503;
+        return {
             successful: false,
             message: 'Unhealthy',
             code: 'UNHEALTHY'
-        }));
+        };
     }
 }
