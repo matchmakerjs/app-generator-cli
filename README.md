@@ -86,6 +86,8 @@ import {
     SqliteInMemoryConnectionOptions,
     TransactionalProxyFactory
 } from "@matchmakerjs/matchmaker-typeorm";
+import { IncomingMessage } from 'http';
+import { JwtClaims } from '@matchmakerjs/jwt-validator';
 
 createTypeOrmModule(SqliteInMemoryConnectionOptions({
     entities: [
@@ -102,6 +104,14 @@ createTypeOrmModule(SqliteInMemoryConnectionOptions({
             container,
             argumentListResolver,
             validator,
+            accessClaimsResolver: {
+                getClaims: async (request: IncomingMessage) => {
+                    // your token validation logic here
+                    return {
+                        sub: request.headers['x-principal-id'] || '1'
+                    } as JwtClaims;
+                }
+            }
         }),
         cleanUp,
     );
@@ -113,6 +123,7 @@ createTypeOrmModule(SqliteInMemoryConnectionOptions({
 src/app/data/entities/order.entity.ts
 ```
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { OrderItem } from "./order-item.entity";
 
 @Entity()
 export class Order {
@@ -127,6 +138,11 @@ export class Order {
 
     @Column({ nullable: false })
     customerId: string;
+
+    @Column({ nullable: false })
+    createdBy: string;
+
+    items: OrderItem[];
 }
 ```
 
@@ -220,6 +236,7 @@ export class OrderItemService {
 src/app/services/order.service.ts
 ```
 import { Injectable } from "@matchmakerjs/di";
+import { RequestMetadata } from "@matchmakerjs/matchmaker-security";
 import { Transactional } from "@matchmakerjs/matchmaker-typeorm";
 import { EntityManager } from "typeorm";
 import { Order } from "../data/entities/order.entity";
@@ -231,12 +248,14 @@ export class OrderService {
 
     constructor(
         private entityManager: EntityManager,
-        private orderItemService: OrderItemService) { }
+        private orderItemService: OrderItemService,
+        private requestMetadata: RequestMetadata) { }
 
     @Transactional()
     async saveOrder(request: OrderApiRequest): Promise<Order> {
         const order = new Order();
         order.customerId = request.customerId;
+        order.createdBy = this.requestMetadata.userId;
         order.amount = request.items.map(item => item.amount)
             .reduce((a, b) => a + b);
         await this.entityManager.save(order);
@@ -252,14 +271,12 @@ src/app/controllers/order.controller.ts
 
 ```
 import { ErrorResponse, Get, PathParameter, Post, RequestBody, RestController, Valid } from '@matchmakerjs/matchmaker';
-import { AnonymousUserAllowed } from '@matchmakerjs/matchmaker-security';
 import { EntityManager } from 'typeorm';
 import { OrderItem } from '../data/entities/order-item.entity';
 import { Order } from '../data/entities/order.entity';
 import { OrderApiRequest } from '../dto/request/order.request';
 import { OrderService } from "../services/order.service";
 
-@AnonymousUserAllowed()
 @RestController()
 export class OrderController {
 
@@ -272,7 +289,7 @@ export class OrderController {
         return this.orderService.saveOrder(request);
     }
 
-    @Get('orders/:id:\\d+') // the optional regular expression argument (:\\d+) ensures this endpoint is only matched when :id is an integer
+    @Get('orders/:id:\\d+')
     async getOrder(@PathParameter('id') id: string): Promise<Order> {
         const order = await this.entityManager.findOne(Order, id);
         if (!order) {
