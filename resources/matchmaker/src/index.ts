@@ -14,7 +14,7 @@ startServerWithGracefulShutdown(
         container,
         argumentListResolver,
         validator,
-        accessClaimsResolver: RemoteKeyAccessClaimsValidator(axios)
+        accessClaimsResolver: RemoteKeyAccessClaimsValidator(process.env.WEB_KEY_URL, axios)
     }),
     cleanUp,
 );
