@@ -150,7 +150,7 @@ export class Order {
 src/app/data/entities/order-item.entity.ts
 ```
 import { Exclude } from "class-transformer";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, RelationId } from "typeorm";
 import { Order } from "./order.entity";
 
 @Entity()
@@ -167,6 +167,10 @@ export class OrderItem {
 
     @Column({ nullable: false })
     amount: number;
+
+    @Exclude()
+    @RelationId((item: OrderItem) => item.order)
+    orderId: number;
 }
 ```
 
@@ -326,7 +330,7 @@ export class OrderController {
             order: { 'createdAt': 'DESC' }
         });
         const items = await this.entityManager.find(OrderItem, {
-            relations: ['order'],
+            loadRelationIds: true,
             where: {
                 order: {
                     id: In(orders.map(order => order.id))
@@ -335,7 +339,7 @@ export class OrderController {
             order: { 'amount': 'DESC' }
         });
         orders.forEach(order => {
-            order.items = items.filter(item => item.order.id === order.id);
+            order.items = items.filter(item => item.orderId === order.id);
         });
         return {
             results: orders,
@@ -400,10 +404,10 @@ test/order-api.test
 import { createContainer, LazyDIContainer } from '@matchmakerjs/di';
 import { JwtClaims } from '@matchmakerjs/jwt-validator';
 import { createTypeOrmModule, SqliteInMemoryConnectionOptions } from '@matchmakerjs/matchmaker-typeorm';
-import { TestServer } from './conf/test-server';
 import * as dotenv from 'dotenv';
-import { SearchResult } from '../src/app/dto/search-result';
 import { Order } from '../src/app/data/entities/order.entity';
+import { SearchResult } from '../src/app/dto/search-result';
+import { TestServer } from './conf/test-server';
 
 describe('Order', () => {
 
