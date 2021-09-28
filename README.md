@@ -192,7 +192,7 @@ export class OrderItemApiRequest {
 src/app/dto/request/order.request.ts
 ```
 import { Type } from "class-transformer";
-import { IsDefined, IsNotEmpty, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsDefined, IsNotEmpty, ValidateNested } from "class-validator";
 import { OrderItemApiRequest } from "./order-item.request";
 
 export class OrderApiRequest {
@@ -204,7 +204,7 @@ export class OrderApiRequest {
     @ValidateNested()
     @Type(() => OrderItemApiRequest)
     @IsDefined()
-    @IsNotEmpty()
+    @ArrayNotEmpty()
     items: OrderItemApiRequest[]
 }
 ```
@@ -386,3 +386,105 @@ export default SimpleRouter.fromControllers([
 ```
 
 Visit `http://127.0.0.1:5000` in your browser to view/use the new endpoints
+
+# Integration Test
+
+.env
+```
+...
+TYPEORM_ENTITIES=src/app/data/entities/**/*.entity.ts
+```
+
+test/order-api.test
+```
+import { createContainer, LazyDIContainer } from '@matchmakerjs/di';
+import { JwtClaims } from '@matchmakerjs/jwt-validator';
+import { createTypeOrmModule, SqliteInMemoryConnectionOptions } from '@matchmakerjs/matchmaker-typeorm';
+import { TestServer } from './conf/test-server';
+import * as dotenv from 'dotenv';
+import { SearchResult } from '../src/app/dto/search-result';
+import { Order } from '../src/app/data/entities/order.entity';
+
+describe('Order', () => {
+
+    let container: LazyDIContainer;
+    let cleanUp: () => void;
+
+    beforeAll(async () => {
+        dotenv.config();
+        const typeOrmModule = await createTypeOrmModule(SqliteInMemoryConnectionOptions());
+        [container, cleanUp] = createContainer({
+            modules: [typeOrmModule]
+        });
+    })
+
+    afterAll(() => cleanUp && cleanUp());
+
+    it('should reject invalid amount', async () => {
+        const response = await TestServer(container, { sub: '1' } as JwtClaims)
+            .post(`/orders`,
+                {
+                    "customerId": "1",
+                    "items": [
+                        {
+                            "productId": "1",
+                            "amount": 0
+                        }
+                    ]
+                });
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('should reject empty order items', async () => {
+        const response = await TestServer(container, { sub: '1' } as JwtClaims)
+            .post(`/orders`,
+                {
+                    "customerId": "1",
+                    "items": []
+                });
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('should reject missing order items', async () => {
+        const response = await TestServer(container, { sub: '1' } as JwtClaims)
+            .post(`/orders`,
+                {
+                    "customerId": "1",
+                });
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('should create order', async () => {
+        const response = await TestServer(container, { sub: '1' } as JwtClaims)
+            .post(`/orders`,
+                {
+                    "customerId": "1",
+                    "items": [
+                        {
+                            "productId": "1",
+                            "amount": 10
+                        }
+                    ]
+                });
+        expect(response.statusCode).toBe(201);
+    });
+
+    it('should fetch order with items', async () => {
+        const claims = { sub: '1' } as JwtClaims;
+        await TestServer(container, claims)
+            .post(`/orders`,
+                {
+                    "customerId": "1",
+                    "items": [
+                        {
+                            "productId": "1",
+                            "amount": 10
+                        }
+                    ]
+                });
+        const response = await TestServer(container, claims).get('/orders');
+        expect(response.statusCode).toBe(200);
+        expect((response.body as SearchResult<Order>).results[0].items.length).toBe(1);
+    });
+});
+```
