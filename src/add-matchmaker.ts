@@ -17,7 +17,7 @@ export async function addMatchmaker(options: {
         cwd = path.resolve(options.cwd, cwd);
     }
 
-    shell.exec(`npm i --prefix ${cwd} reflect-metadata @matchmakerjs/jwt-validator @matchmakerjs/di @matchmakerjs/matchmaker @matchmakerjs/matchmaker-security class-transformer class-validator`);
+    shell.exec(`npm i --prefix ${cwd} reflect-metadata @matchmakerjs/jwt-validator @matchmakerjs/di @matchmakerjs/matchmaker @matchmakerjs/matchmaker-security class-transformer class-validator axios`);
     shell.exec(`npm i --prefix ${cwd} @matchmakerjs/rest-assured @matchmakerjs/api-doc-cli dotenv ts-node nodemon -D`);
 
     await new Promise<void>((res, rej) => {

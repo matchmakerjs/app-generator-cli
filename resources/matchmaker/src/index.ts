@@ -1,6 +1,7 @@
 import { createContainer } from '@matchmakerjs/di';
 import { startServerWithGracefulShutdown } from '@matchmakerjs/matchmaker';
-import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
+import { RemoteKeyAccessClaimsValidator, SecureRequestListener } from '@matchmakerjs/matchmaker-security';
+import axios from 'axios';
 import argumentListResolver from './conf/argument-list-resolver';
 import router from './conf/router';
 import validator from './conf/validator';
@@ -13,6 +14,7 @@ startServerWithGracefulShutdown(
         container,
         argumentListResolver,
         validator,
+        accessClaimsResolver: RemoteKeyAccessClaimsValidator(axios)
     }),
     cleanUp,
 );
