@@ -409,7 +409,7 @@ import { Order } from '../src/app/data/entities/order.entity';
 import { SearchResult } from '../src/app/dto/search-result';
 import { TestServer } from './conf/test-server';
 
-describe('Order', () => {
+describe('Order API', () => {
 
     let container: LazyDIContainer;
     let cleanUp: () => void;
