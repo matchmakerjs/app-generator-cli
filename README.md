@@ -488,7 +488,7 @@ describe('Order API', () => {
                 });
         const response = await TestServer(container, claims).get('/orders');
         expect(response.statusCode).toBe(200);
-        expect((response.body as SearchResult<Order>).results[0].items.length).toBe(1);
+        expect((response.parseJson() as SearchResult<Order>).results[0].items.length).toBe(1);
     });
 });
 ```

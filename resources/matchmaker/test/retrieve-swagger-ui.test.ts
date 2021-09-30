@@ -18,8 +18,12 @@ describe('swagger UI', () => {
         await new Promise<void>((res, rej) => {
             fs.readFile(process.env.SWAGGER_UI_PATH, (err, data) => {
                 if (err) return rej(err);
-                expect(response.body).toEqual(data);
-                res();
+                try {
+                    expect(response.buffer).toEqual(data);
+                    res();
+                } catch (error) {
+                    rej(error);
+                }
             });
         });
     });
