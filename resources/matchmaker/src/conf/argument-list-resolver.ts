@@ -5,8 +5,9 @@ import {
     PathArgumentResolverFactory,
     QueryArgumentResolverFactory,
     QueryObjectArgumentResolverFactory,
-    RequestBodyArgumentResolverFactory,
+    RequestBodyArgumentResolverFactory
 } from '@matchmakerjs/matchmaker';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { IncomingMessage, ServerResponse } from 'http';
 
 export default new DelegatingArgumentListResolver([
@@ -14,5 +15,7 @@ export default new DelegatingArgumentListResolver([
     new PathArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new QueryArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new QueryObjectArgumentResolverFactory<IncomingMessage, ServerResponse>(),
-    new RequestBodyArgumentResolverFactory([new JsonDataConverter()]),
+    new RequestBodyArgumentResolverFactory([
+        new JsonDataConverter((type: unknown, data: unknown) => plainToClass(type as ClassConstructor<unknown>, data))
+    ]),
 ]);
