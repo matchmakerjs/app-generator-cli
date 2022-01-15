@@ -20,6 +20,7 @@ export class IndexController {
                             'content-type': 'text/html',
                         });
                         context.response.once('close', res);
+                        context.response.once('error', rej);
                         fs.createReadStream(swaggerUIPath).pipe(context.response);
                         return;
                     }
@@ -45,6 +46,7 @@ export class IndexController {
                             'content-type': 'application/json',
                         });
                         context.response.once('close', res);
+                        context.response.once('error', rej);
                         fs.createReadStream(docsPath).pipe(context.response);
                         return;
                     }
