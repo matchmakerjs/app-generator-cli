@@ -19,8 +19,9 @@ export class IndexController {
                         context.response.writeHead(200, {
                             'content-type': 'text/html',
                         });
+                        context.response.once('close', res);
                         fs.createReadStream(swaggerUIPath).pipe(context.response);
-                        return res();
+                        return;
                     }
                     if (err.code === 'ENOENT') {
                         return rej(new ErrorResponse(404, { message: 'Swagger UI not available' }));
@@ -43,8 +44,9 @@ export class IndexController {
                         context.response.writeHead(200, {
                             'content-type': 'application/json',
                         });
+                        context.response.once('close', res);
                         fs.createReadStream(docsPath).pipe(context.response);
-                        return res();
+                        return;
                     }
                     if (err.code === 'ENOENT') {
                         return rej(new ErrorResponse(404, { message: 'API docs not available' }));

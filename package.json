@@ -39,6 +39,7 @@
     "@types/node": "^16.9.1",
     "@types/shelljs": "^0.8.9",
     "@types/yargs": "^17.0.2",
+    "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "jest": "^27.2.0",
     "rimraf": "^3.0.2",
