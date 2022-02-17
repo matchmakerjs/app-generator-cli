@@ -17,20 +17,25 @@ const [container, cleanUp] = createContainer({
     modules: [],
 });
 
-const keyResolver = new CachingKeyResolver(new RemoteKeyResolver(process.env.WEB_KEY_URL), {
-    cacheSize: parseInt(process.env.WEB_KEY_CACHE_SIZE, 10)
-});
-const jwtValidator = new JwtValidator(
-    new RsaJwtSignatureValidator(keyResolver),
-    parseInt(process.env.JWT_CLOCK_SKEW_MS || '1000', 10)
-);
+try {
+    const keyResolver = new CachingKeyResolver(new RemoteKeyResolver(process.env.WEB_KEY_URL), {
+        cacheSize: parseInt(process.env.WEB_KEY_CACHE_SIZE, 10)
+    });
+    const jwtValidator = new JwtValidator(
+        new RsaJwtSignatureValidator(keyResolver),
+        parseInt(process.env.JWT_CLOCK_SKEW_MS || '1000', 10)
+    );
 
-const server = http.createServer(SecureRequestListener(router, {
-    container,
-    argumentListResolver,
-    validator,
-    accessClaimsResolver: BearerTokenClaimsResolver.forIncomingMessage(jwtValidator),
-    serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
-}));
-addGracefulShutdown(server, cleanUp);
-startServer(server);
+    const server = http.createServer(SecureRequestListener(router, {
+        container,
+        argumentListResolver,
+        validator,
+        accessClaimsResolver: BearerTokenClaimsResolver.forIncomingMessage(jwtValidator),
+        serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
+    }));
+    addGracefulShutdown(server, cleanUp);
+    startServer(server);
+} catch (error) {
+    console.error(error);
+    cleanUp();
+}

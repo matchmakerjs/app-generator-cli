@@ -16,12 +16,13 @@ export class IndexController {
                 const swaggerUIPath = process.env.SWAGGER_UI_PATH || './swagger-ui.html';
                 fs.stat(swaggerUIPath, (err) => {
                     if (!err) {
-                        context.response.writeHead(200, {
+                        const response = context.response;
+                        response.writeHead(200, {
                             'content-type': 'text/html',
                         });
-                        context.response.once('close', res);
-                        context.response.once('error', rej);
-                        fs.createReadStream(swaggerUIPath).pipe(context.response);
+                        response.once('close', res);
+                        response.once('error', rej);
+                        fs.createReadStream(swaggerUIPath).pipe(response);
                         return;
                     }
                     if (err.code === 'ENOENT') {
@@ -42,12 +43,13 @@ export class IndexController {
                 const docsPath = process.env.API_DOC_PATH || './openapi.json';
                 fs.stat(docsPath, (err) => {
                     if (!err) {
-                        context.response.writeHead(200, {
+                        const response = context.response;
+                        response.writeHead(200, {
                             'content-type': 'application/json',
                         });
-                        context.response.once('close', res);
-                        context.response.once('error', rej);
-                        fs.createReadStream(docsPath).pipe(context.response);
+                        response.once('close', res);
+                        response.once('error', rej);
+                        fs.createReadStream(docsPath).pipe(response);
                         return;
                     }
                     if (err.code === 'ENOENT') {

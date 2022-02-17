@@ -18,7 +18,7 @@ export async function addMatchmaker(options: {
     }
 
     shell.exec(`npm i --prefix ${cwd} reflect-metadata @matchmakerjs/jwt-validator @matchmakerjs/di @matchmakerjs/matchmaker @matchmakerjs/matchmaker-security class-transformer class-validator`);
-    shell.exec(`npm i --prefix ${cwd} @matchmakerjs/rest-assured @matchmakerjs/api-doc-cli dotenv ts-node nodemon -D`);
+    shell.exec(`npm i --prefix ${cwd} @matchmakerjs/rest-assured @matchmakerjs/api-doc-cli @types/validator dotenv ts-node nodemon -D`);
 
     await new Promise<void>((res, rej) => {
         const packageJsonPath = path.resolve(cwd, 'package.json');
@@ -42,4 +42,5 @@ export async function addMatchmaker(options: {
 
     shell.cp('-r', path.resolve(cliDir, '..', 'resources', 'matchmaker', '*'), cwd);
     await copy(path.resolve(cliDir, '..', 'resources', 'matchmaker', '.env'), path.resolve(cwd, '.env'));
+    await copy(path.resolve(cliDir, '..', 'resources', 'matchmaker', '.gitignore'), path.resolve(cwd, '.gitignore'));
 }
