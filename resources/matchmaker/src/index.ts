@@ -1,4 +1,4 @@
-import { createContainer } from '@matchmakerjs/di';
+import { createContainer, DIContainerModule } from '@matchmakerjs/di';
 import { BearerTokenClaimsResolver, CachingKeyResolver, JwtValidator, RsaJwtSignatureValidator } from '@matchmakerjs/jwt-validator';
 import { addGracefulShutdown, startServer } from '@matchmakerjs/matchmaker';
 import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
@@ -13,29 +13,33 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('unhandledRejection:', reason);
 });
 
-const [container, cleanUp] = createContainer({
-    modules: [],
-});
-
-try {
-    const keyResolver = new CachingKeyResolver(new RemoteKeyResolver(process.env.WEB_KEY_URL), {
-        cacheSize: parseInt(process.env.WEB_KEY_CACHE_SIZE, 10)
+Promise.all<DIContainerModule>([]).then(modules => {
+    const [container, cleanUp] = createContainer({
+        modules: [
+            ...modules
+        ],
     });
-    const jwtValidator = new JwtValidator(
-        new RsaJwtSignatureValidator(keyResolver),
-        parseInt(process.env.JWT_CLOCK_SKEW_MS || '1000', 10)
-    );
 
-    const server = http.createServer(SecureRequestListener(router, {
-        container,
-        argumentListResolver,
-        validator,
-        accessClaimsResolver: BearerTokenClaimsResolver.forIncomingMessage(jwtValidator),
-        serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
-    }));
-    addGracefulShutdown(server, cleanUp);
-    startServer(server);
-} catch (error) {
-    console.error(error);
-    cleanUp();
-}
+    try {
+        const keyResolver = new CachingKeyResolver(new RemoteKeyResolver(process.env.WEB_KEY_URL), {
+            cacheSize: parseInt(process.env.WEB_KEY_CACHE_SIZE, 10)
+        });
+        const jwtValidator = new JwtValidator(
+            new RsaJwtSignatureValidator(keyResolver),
+            parseInt(process.env.JWT_CLOCK_SKEW_MS || '1000', 10)
+        );
+
+        const server = http.createServer(SecureRequestListener(router, {
+            container,
+            argumentListResolver,
+            validator,
+            accessClaimsResolver: BearerTokenClaimsResolver.forIncomingMessage(jwtValidator),
+            serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
+        }));
+        addGracefulShutdown(server, cleanUp);
+        startServer(server);
+    } catch (error) {
+        console.error(error);
+        cleanUp();
+    }
+});

@@ -1,14 +1,16 @@
 import {
+    ArgumentResolutionContext,
     DelegatingArgumentListResolver,
+    getRequestBodyParameters,
     HandlerContextArgumentResolverFactory,
     JsonDataConverter,
     PathArgumentResolverFactory,
     QueryArgumentResolverFactory,
     QueryObjectArgumentResolverFactory,
-    RequestBodyArgumentResolverFactory
+    RequestBodyArgumentResolverFactory,
 } from '@matchmakerjs/matchmaker';
-import { ClassConstructor, plainToClass } from 'class-transformer';
-import { IncomingMessage, ServerResponse } from 'http';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { IncomingMessage, ServerResponse } from 'node:http';
 
 export default new DelegatingArgumentListResolver([
     new HandlerContextArgumentResolverFactory<IncomingMessage, ServerResponse>(),
@@ -16,6 +18,9 @@ export default new DelegatingArgumentListResolver([
     new QueryArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new QueryObjectArgumentResolverFactory<IncomingMessage, ServerResponse>(),
     new RequestBodyArgumentResolverFactory([
-        new JsonDataConverter((type: unknown, data: unknown) => plainToClass(type as ClassConstructor<unknown>, data))
+        new JsonDataConverter((context: ArgumentResolutionContext<IncomingMessage, ServerResponse>, data: unknown) => {
+            const type = getRequestBodyParameters(context.route)[context.paramIndex]?.type || context.paramType;
+            return plainToInstance(type as ClassConstructor<unknown>, data);
+        }),
     ]),
 ]);
