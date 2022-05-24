@@ -1,5 +1,5 @@
 import { createContainer, DIContainerModule } from '@matchmakerjs/di';
-import { BearerTokenClaimsResolver, CachingKeyResolver, JwtValidator, RsaJwtSignatureValidator } from '@matchmakerjs/jwt-validator';
+import { CachingKeyResolver, JwtValidator, RsaJwtSignatureValidator } from '@matchmakerjs/jwt-validator';
 import { addGracefulShutdown, startServer } from '@matchmakerjs/matchmaker';
 import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
 import { instanceToPlain } from 'class-transformer';
@@ -7,9 +7,10 @@ import * as http from 'http';
 import argumentListResolver from './conf/argument-list-resolver';
 import router from './conf/router';
 import validator from './conf/validator';
-import { RemoteKeyResolver } from './remote-key-resolver';
+import { BearerTokenAccessClaimsResolverWithCookieSupport } from './security/access-claims-resolver';
+import { RemoteKeyResolver } from './security/remote-key-resolver';
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
     console.error('unhandledRejection:', reason);
 });
 
@@ -33,7 +34,7 @@ Promise.all<DIContainerModule>([]).then(modules => {
             container,
             argumentListResolver,
             validator,
-            accessClaimsResolver: BearerTokenClaimsResolver.forIncomingMessage(jwtValidator),
+            accessClaimsResolver: new BearerTokenAccessClaimsResolverWithCookieSupport(jwtValidator),
             serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
         }));
         addGracefulShutdown(server, cleanUp);
