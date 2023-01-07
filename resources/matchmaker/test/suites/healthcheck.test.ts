@@ -1,5 +1,5 @@
 import { createContainer } from '@matchmakerjs/di';
-import { TestServer } from './conf/test-server';
+import { TestServer } from '../conf/test-server';
 
 describe('Healthcheck', () => {
     let result: boolean;

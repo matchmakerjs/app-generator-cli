@@ -49,7 +49,7 @@ Update package.json to match the following if you used `npm init`.
 "scripts": {
     "test": "jest",
     ...
- },
+},
 ...
 }
 ```

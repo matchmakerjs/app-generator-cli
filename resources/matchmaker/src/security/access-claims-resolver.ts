@@ -2,7 +2,7 @@ import { AccessClaimsResolver, BearerTokenClaimsResolver, JwtClaims, JwtValidato
 import { IncomingMessage } from "http";
 
 export const getCookieValue = (req: IncomingMessage, cookieName: string) => {
-    const entries: string[] = req.headers.cookie?.split(/ *; */);
+    const entries: string[] = req.headers.cookie?.split(/ *; */) || [];
     for (const entry of entries) {
         const [name, value] = entry.split(/ *= */);
         if (name === cookieName) {
