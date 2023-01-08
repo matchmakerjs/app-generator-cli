@@ -1,4 +1,4 @@
-import { AccessClaimsResolver, BearerTokenClaimsResolver, JwtClaims, JwtValidator } from "@matchmakerjs/jwt-validator";
+import { AccessClaimsResolver, BearerTokenClaimsResolver, ErrorSender, JwtClaims, JwtValidator } from "@matchmakerjs/jwt-validator";
 import { IncomingMessage } from "http";
 
 export const getCookieValue = (req: IncomingMessage, cookieName: string) => {
@@ -21,12 +21,12 @@ export class BearerTokenAccessClaimsResolverWithCookieSupport implements AccessC
         this.bearerClaimsResolver = new BearerTokenClaimsResolver(jwtValidator);
     }
 
-    async getClaims(req: IncomingMessage): Promise<JwtClaims> {
+    async getClaims(req: IncomingMessage, errorSender: ErrorSender): Promise<JwtClaims> {
         const authHeader = req.headers['authorization'];
         if (authHeader) {
-            return this.bearerClaimsResolver.getClaims(authHeader);
+            return this.bearerClaimsResolver.getClaims(authHeader, errorSender);
         }
         let accessToken = getAccessTokenFromCookie(req);
-        if (accessToken) return this.jwtValidator.validateBearerToken(accessToken);
+        if (accessToken) return this.jwtValidator.validateBearerToken(accessToken, errorSender);
     }
 }
