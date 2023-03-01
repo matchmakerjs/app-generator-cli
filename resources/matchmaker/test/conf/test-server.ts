@@ -8,7 +8,7 @@ import argumentListResolver from '../../src/conf/argument-list-resolver';
 import router from '../../src/conf/router';
 import validator from '../../src/conf/validator';
 
-export function TestServer(container: LazyDIContainer, claims?: JwtClaims): Server {
+export const TestServer = (container: LazyDIContainer, claims?: JwtClaims): Server => {
     return createServer(
         SecureRequestListener(router, {
             container,
@@ -20,4 +20,4 @@ export function TestServer(container: LazyDIContainer, claims?: JwtClaims): Serv
             serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true })),
         }),
     );
-}
+};
