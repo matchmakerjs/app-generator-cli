@@ -75,48 +75,63 @@ npm i sqlite3 -D
 Update src/index.ts to be as follows:
 
 ```
-import { createContainer } from '@matchmakerjs/di';
-import { startServerWithGracefulShutdown } from '@matchmakerjs/matchmaker';
+import { createContainer, DIContainerModule } from '@matchmakerjs/di';
+import { JwtClaims } from '@matchmakerjs/jwt-validator';
+import { addGracefulShutdown, startServer } from '@matchmakerjs/matchmaker';
 import { SecureRequestListener } from '@matchmakerjs/matchmaker-security';
-import argumentListResolver from './conf/argument-list-resolver';
-import router from './conf/router';
-import validator from './conf/validator';
 import {
     createTypeOrmModule,
     SqliteInMemoryConnectionOptions,
     TransactionalProxyFactory
 } from "@matchmakerjs/matchmaker-typeorm";
-import { IncomingMessage } from 'http';
-import { JwtClaims } from '@matchmakerjs/jwt-validator';
+import { instanceToPlain } from 'class-transformer';
+import * as http from 'http';
+import argumentListResolver from './conf/argument-list-resolver';
+import router from './conf/router';
+import validator from './conf/validator';
 
-createTypeOrmModule(SqliteInMemoryConnectionOptions({
-    entities: [
-        'src/app/data/entities/**/*.entity.ts'
-    ]
-})).then((typeOrmModule) => {
+process.on('unhandledRejection', (reason) => {
+    console.error('unhandledRejection:', reason);
+});
 
+Promise.all<DIContainerModule>([
+    createTypeOrmModule(SqliteInMemoryConnectionOptions({
+        entities: [
+            'src/app/data/entities/**/*.entity.ts'
+        ]
+    }))
+]).then(modules => {
     const [container, cleanUp] = createContainer({
-        modules: [typeOrmModule],
-        proxyFactory: TransactionalProxyFactory
+        proxyFactory: TransactionalProxyFactory,
+        modules: [
+            ...modules
+        ],
     });
-    startServerWithGracefulShutdown(
-        SecureRequestListener(router, {
+
+    try {
+        const server = http.createServer(SecureRequestListener(router, {
             container,
             argumentListResolver,
             validator,
             accessClaimsResolver: {
-                getClaims: async (request: IncomingMessage) => {
+                getClaims: async (request: http.IncomingMessage) => {
                     // your token validation logic here
                     const userId = request.headers['x-principal-id'];
                     return userId && {
                         sub: userId
                     } as JwtClaims;
                 }
-            }
-        }),
-        cleanUp,
-    );
+            },
+            serialize: (data: unknown) => JSON.stringify(instanceToPlain(data, { enableCircularCheck: true }))
+        }));
+        addGracefulShutdown(server, cleanUp);
+        startServer(server);
+    } catch (error) {
+        console.error(error);
+        cleanUp();
+    }
 });
+
 ```
 
 ## Add entities to `src/app/data/entities/`
@@ -176,7 +191,7 @@ export class OrderItem {
 
 ## Add DTOs to `src/app/dto/request/`
 
-src/app/dto/request/order-item.request.ts
+src/app/data/dto/requests/order-item.request.ts
 ```
 import { IsDefined, IsNotEmpty, Min } from "class-validator";
 
@@ -193,7 +208,7 @@ export class OrderItemApiRequest {
 }
 ```
 
-src/app/dto/request/order.request.ts
+src/app/data/dto/requests/order.request.ts
 ```
 import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsDefined, IsNotEmpty, ValidateNested } from "class-validator";
@@ -213,15 +228,62 @@ export class OrderApiRequest {
 }
 ```
 
+src/app/data/dto/requests/page.request.ts
+```
+export class PageRequest {
+    limit: number;
+    offset: number;
+
+    static getLimit(limit: number, defaultLimit: number, maxLimit?: number) {
+        if (limit === null || limit === undefined) return defaultLimit;
+        const val = Number(limit);
+        if (val < 0) return defaultLimit;
+        if (maxLimit) return Math.min(val, maxLimit);
+        return val;
+    }
+
+    static getOffset(limit: number) {
+        if (limit === null || limit === undefined) return 0;
+        const val = Number(limit);
+        return Math.max(val, 0);
+    }
+
+    static computeTotal(limit: number, offset: number, size: number) {
+        const noLimit = typeof limit !== 'number';
+        if (size === 0 && (offset || 0) === 0 && (noLimit || limit > 0)) {
+            return 0;
+        }
+        if (size > 0 && (noLimit || limit > size)) {
+            return size + (offset || 0);
+        }
+    }
+}
+```
+
+src/app/data/dto/responses/search-result.ts
+```
+import { Type } from 'class-transformer';
+
+export class SearchResult<T> {
+    @Type(() => Number)
+    limit: number;
+    @Type(() => Number)
+    offset: number;
+    @Type(() => Number)
+    total: number;
+    results: T[];
+}
+```
+
 ## Add services to `src/app/services/`
 
 src/app/services/order-item.service.ts
 ```
 import { Injectable } from "@matchmakerjs/di";
 import { EntityManager } from "typeorm";
+import { OrderItemApiRequest } from "../data/dto/requests/order-item.request";
 import { OrderItem } from "../data/entities/order-item.entity";
 import { Order } from "../data/entities/order.entity";
-import { OrderItemApiRequest } from "../dto/request/order-item.request";
 
 @Injectable()
 export class OrderItemService {
@@ -244,8 +306,8 @@ import { Injectable } from "@matchmakerjs/di";
 import { RequestMetadata } from "@matchmakerjs/matchmaker-security";
 import { Transactional } from "@matchmakerjs/matchmaker-typeorm";
 import { EntityManager } from "typeorm";
+import { OrderApiRequest } from "../data/dto/requests/order.request";
 import { Order } from "../data/entities/order.entity";
-import { OrderApiRequest } from "../dto/request/order.request";
 import { OrderItemService } from "./order-item.service";
 
 @Injectable()
@@ -272,6 +334,29 @@ export class OrderService {
 
 ## Add controller and authorization
 
+src/app/guards/admin.guard.ts
+```
+import { Injectable } from "@matchmakerjs/di";
+import { RouteGuard, RouteObjection } from "@matchmakerjs/matchmaker";
+import { RequestMetadata } from "@matchmakerjs/matchmaker-security";
+import { IncomingMessage } from "http";
+
+@Injectable()
+export class AdminGuard implements RouteGuard<IncomingMessage> {
+
+    constructor(private requestMetadata: RequestMetadata) { }
+
+    async findObjection(request: IncomingMessage): Promise<RouteObjection> {
+        if (this.requestMetadata.userId === '1') {
+            return;
+        }
+        return {
+            statusCode: 403
+        };
+    }
+}
+```
+
 src/app/controllers/order.controller.ts
 
 ```
@@ -279,11 +364,11 @@ import { ErrorResponse, Get, HandlerContext, PathParameter, Post, Query, Request
 import { IfAuthorized } from '@matchmakerjs/matchmaker-security';
 import { IncomingMessage, ServerResponse } from 'http';
 import { EntityManager, In } from 'typeorm';
+import { OrderApiRequest } from '../data/dto/requests/order.request';
+import { PageRequest } from '../data/dto/requests/page-request';
+import { SearchResult } from '../data/dto/responses/search-result';
 import { OrderItem } from '../data/entities/order-item.entity';
 import { Order } from '../data/entities/order.entity';
-import { PageRequest } from '../dto/page-request';
-import { OrderApiRequest } from '../dto/request/order.request';
-import { SearchResult } from '../dto/search-result';
 import { AdminGuard } from '../guards/admin.guard';
 import { OrderService } from "../services/order.service";
 
@@ -301,8 +386,8 @@ export class OrderController {
     }
 
     @Get('orders/:id:\\d+')
-    async getOrder(@PathParameter('id') id: string): Promise<Order> {
-        const order = await this.entityManager.findOne(Order, id);
+    async getOrder(@PathParameter('id') id: number): Promise<Order> {
+        const order = await this.entityManager.findOneBy(Order, { id });
         if (!order) {
             throw new ErrorResponse(404, {
                 message: 'Unknown order id'
@@ -351,29 +436,6 @@ export class OrderController {
 }
 ```
 
-src/app/guards/admin.guard.ts
-```
-import { Injectable } from "@matchmakerjs/di";
-import { RouteGuard, RouteObjection } from "@matchmakerjs/matchmaker";
-import { RequestMetadata } from "@matchmakerjs/matchmaker-security";
-import { IncomingMessage } from "http";
-
-@Injectable()
-export class AdminGuard implements RouteGuard<IncomingMessage> {
-
-    constructor(private requestMetadata: RequestMetadata) { }
-
-    async findObjection(request: IncomingMessage): Promise<RouteObjection> {
-        if (this.requestMetadata.userId === '1') {
-            return;
-        }
-        return {
-            statusCode: 403
-        };
-    }
-}
-```
-
 ## Register controllers
 
 src/conf/router.ts
@@ -399,15 +461,15 @@ Visit `http://127.0.0.1:5000` in your browser to view/use the new endpoints
 TYPEORM_ENTITIES=src/app/data/entities/**/*.entity.ts
 ```
 
-test/order-api.test
+test/suites/api/order-api.test
 ```
 import { createContainer, LazyDIContainer } from '@matchmakerjs/di';
 import { JwtClaims } from '@matchmakerjs/jwt-validator';
 import { createTypeOrmModule, SqliteInMemoryConnectionOptions } from '@matchmakerjs/matchmaker-typeorm';
 import * as dotenv from 'dotenv';
-import { Order } from '../src/app/data/entities/order.entity';
-import { SearchResult } from '../src/app/dto/search-result';
-import { TestServer } from './conf/test-server';
+import { SearchResult } from '../../../src/app/data/dto/responses/search-result';
+import { Order } from '../../../src/app/data/entities/order.entity';
+import { TestServer } from '../../conf/test-server';
 
 describe('Order API', () => {
 
